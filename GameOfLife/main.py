@@ -11,6 +11,7 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from patterns import pattern_list
 
 ON = 255
 OFF = 0
@@ -32,12 +33,12 @@ def update(frame_num, img, grid, size):
             #We get the sum of all cell values to divide
             #by 255 for finding how many neighbours are there
             total = int((grid[(x-1)%size, (y-1)%size] +
-                         grid[x, (y-1)%size] +
-                         grid[(x+1)%size, (y-1)%size] +
                          grid[(x-1)%size, y] +
-                         grid[(x+1)%size, y] +
                          grid[(x-1)%size, (y+1)%size] +
+                         grid[x, (y-1)%size] +
                          grid[x, (y+1)%size] +
+                         grid[(x+1)%size, (y-1)%size] +
+                         grid[(x+1)%size, y] +
                          grid[(x+1)%size, (y+1)%size]
                         )/255)
 
@@ -53,22 +54,16 @@ def update(frame_num, img, grid, size):
     grid[:] = new_grid[:]
     return img,
 
-def add_glider(x, y, grid):
-    '''Adds a glider with top left cell at (x, y)'''
-
-    glider = np.array([[0, 0, 255],
-                       [255, 0, 255],
-                       [0, 255, 255]])
-
-    #From x to x+3, get 'glider's x values
-    #From y to y+3, get 'glider's y values
-    grid[x:x+3, y:y+3] = glider
-
-def add_object(grid, x, y, cell_arr, size):
+def add_object(grid, x, y, cell_arr, size_x, size_y):
     '''Adds an object with top left cell at (x,y)'''
 
-    cell = cell_arr
-    grid[x:x+size, y:y+size] = cell
+    cell_pat = np.zeros(size_x*size_y).reshape(size_y, size_x)
+
+    for cell in cell_arr:
+        #print(f"x: {cell[0]}, y: {cell[1]}")
+        cell_pat[cell[1]][cell[0]] = 255
+
+    grid[y:y+size_y, x:x+size_x] = cell_pat
 
 def main():
     '''The main program'''
@@ -95,10 +90,12 @@ def main():
     if args.random:
         grid = random_grid(size)
 
-    add_glider(1, 1, grid)
+    #add_glider(10 , 1, grid)
+    add_object(grid, 9, 0, pattern_list[0].cells, pattern_list[0].size_x, pattern_list[0].size_y)
+    add_object(grid, 16, 16, pattern_list[1].cells, pattern_list[1].size_x, pattern_list[1].size_y)
 
     fig, ax = plt.subplots()
-    img = ax.imshow(grid, interpolation='nearest')
+    img = ax.imshow(grid, interpolation='nearest', cmap='gray')
 
     #Animation part
     anim = animation.FuncAnimation(fig, update, fargs=(img, grid, size, ),
