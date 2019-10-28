@@ -12,21 +12,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from multiprocessing import Process, Pool
-#from patterns import pattern_list
 from patterns import Pattern
 
 ON = 255
 OFF = 0
 vals = [ON, OFF]
-#pattern_path = "./PatternFiles"
-pattern_list = []
 
 def load_patterns():
     '''Loads patterns from local .txt files'''
-    global pattern_list
-    Pattern(auto_load=True, filename="glider.txt", pat_list=pattern_list, to_list=True)
-    Pattern(auto_load=True, filename="pentadecathlon.txt", pat_list=pattern_list, to_list=True)
-    Pattern(auto_load=True, filename="t_tetromino.txt", pat_list=pattern_list, to_list=True)
+    Pattern(filename="glider.txt", pat_list=Pattern.pattern_list)
+    Pattern(filename="pentadecathlon.txt", pat_list=Pattern.pattern_list)
+    Pattern(filename="t_tetromino.txt", pat_list=Pattern.pattern_list)
+    Pattern(filename="gosper.txt", pat_list=Pattern.pattern_list)
+    Pattern(filename="inf_10_cell.txt", pat_list=Pattern.pattern_list)
+
+    #Sorting because keeping everything orginized is nice
+    Pattern.pattern_list.sort(key = lambda pattern: pattern.name)
 
 def random_grid(size):
     '''Creates a grid with randomly chosen ON/OFF cells'''
@@ -66,20 +67,41 @@ def update(frame_num, img, grid, size):
     grid[:] = new_grid[:]
     return img,
 
-def find_object(name, object_list):
-    '''Finds the pattern in the pattern_list'''
-    pass
+def pat_menu():
+    print("\nList of patterns:")
+    for d, pat in enumerate(Pattern.pattern_list, start=1):
+        print(f"{d}- {pat.name}")
+
+    try:
+        pat_num = int(input("Your choice: ")) - 1
+        if pat_num > len(Pattern.pattern_list):
+            print("Index you entered is out of range.")
+            print("Please select a number from the menu...")
+            return 
+
+        pat_c = Pattern.pattern_list[pat_num]
+        print("Top-left corner being x = 0, y = 0 ;")
+        x = int(input("Enter a number for x-coordinate: "))
+        y = int(input("Enter a number for y-coordinate: "))
+        return pat_c, x, y
+    except ValueError as error:
+        print(error)
+        print("Please enter an integer...")
+        return
 
 def add_object(grid, x, y, cell_arr, size_x, size_y):
     '''Adds an object with top left cell at (x,y)'''
-
     cell_pat = np.zeros(size_x*size_y).reshape(size_y, size_x)
 
     for cell in cell_arr:
-        #print(f"x: {cell[0]}, y: {cell[1]}")
         cell_pat[cell[1]][cell[0]] = 255
 
-    grid[y:y+size_y, x:x+size_x] = cell_pat
+    try:
+        grid[y:y+size_y, x:x+size_x] = cell_pat
+    except ValueError as error:
+        print("Can't add pattern to the grid")
+        print(error)
+        print("Please make sure pattern is added within the borders")
 
 def run_anim(grid, size, interval, filename):
     fig, ax = plt.subplots()
@@ -90,7 +112,8 @@ def run_anim(grid, size, interval, filename):
                                    frames=60, interval=interval, save_count=50)
 
     if filename:
-        anim.save(filename, writer='imagemagick', fps=10, extra_args=['-vcodec', 'libx264'])
+        anim.save(filename, writer='imagemagick', fps=10,
+                  extra_args=['-vcodec', 'libx264'])
 
     #plt.grid(which='both', color='gray')
     #plt.minorticks_on()
@@ -121,9 +144,39 @@ def main():
     if args.random:
         grid = random_grid(size)
 
-    #add_glider(10 , 1, grid)
-    add_object(grid, 9, 0, pattern_list[0].cells, pattern_list[0].size_x, pattern_list[0].size_y)
-    add_object(grid, 16, 16, pattern_list[1].cells, pattern_list[1].size_x, pattern_list[1].size_y)
+    #Create preview of display
+    grid_tmp = grid.copy()
+
+    #Adding a pattern to the grid
+    while True:
+        try:
+            pat_choice, x_choice, y_choice = pat_menu()
+        except TypeError as error:
+            print(error)
+            print("Returning to the menu...")
+            continue
+        
+        add_object(grid_tmp, x_choice, y_choice, pat_choice.cells,
+                   pat_choice.size_x, pat_choice.size_y)
+
+        answer = input("Do you want to add another? [y/n]: ")
+        if answer == "n" or answer == "N":
+            print("This is the starting frame.")
+            print("(Close the window to continue)")
+            plt.imshow(grid_tmp, interpolation='nearest', cmap='gray')
+            plt.show()
+
+            sub_answer = input("Do you want to start the game? [y/n]: ")
+            if sub_answer == "y" or sub_answer == "Y":
+                grid[:] = grid_tmp[:]
+                break
+            elif sub_answer == "n" or sub_answer == "N":
+                print("Returning to the menu...")
+                grid_tmp = grid.copy()
+            else:
+                "Please enter a valid answer..."
+
+    run_anim(grid, size, anim_interval, args.movfile_name)
 
     #Stops at proc.join() until the window is closed
     #proc = Process(target=run_anim, args=(grid, size, anim_interval, args.movfile_name))
@@ -132,8 +185,6 @@ def main():
     #add_object(grid, 4, 4, pattern_list[2].cells, pattern_list[2].size_x, pattern_list[2].size_y)
     #Output
     #proc.join()
-
-    run_anim(grid, size, anim_interval, args.movfile_name)
 
 if __name__ == "__main__":
     load_patterns()

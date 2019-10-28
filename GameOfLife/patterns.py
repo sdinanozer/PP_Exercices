@@ -5,12 +5,12 @@ Pattern class for easier use of Conway's Game of Life
 import os
 import numpy as np
 
-
 class Pattern():
     pattern_path = "./PatternFiles"
+    pattern_list = []
     
     def __init__(self, name="", pat_type="", size_x=0, size_y=0, cells=[],
-                 pat_list=[], to_list=False, auto_load=False, filename=""):
+                 pat_list=[], to_list=True, auto_load=True, filename=""):
         if not auto_load:
             self.name = name
             self.pat_type = pat_type
@@ -55,12 +55,10 @@ class Pattern():
                 pattern_file.write(f"{self.size_x}\n")
                 pattern_file.write(f"{self.size_y}\n")
 
-                for ctr in range(len(self.cells)):
-                    pat_str = ','.join([str(num) for num in self.cells[ctr]])
+                for d in range(len(self.cells)):
+                    pat_str = ','.join([str(num) for num in self.cells[d]])
                     pattern_file.write(f"{pat_str}\n")
             except AttributeError as error:
                 print("Failed to export pattern.")
                 print(error)
                 print("Please make sure the pattern is loaded correctly...")
-
-#pattern_list.sort(key = lambda pattern: pattern.name)
