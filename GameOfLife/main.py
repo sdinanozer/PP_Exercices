@@ -11,17 +11,29 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from patterns import pattern_list
+from multiprocessing import Process, Pool
+#from patterns import pattern_list
+from patterns import Pattern
 
 ON = 255
 OFF = 0
 vals = [ON, OFF]
+#pattern_path = "./PatternFiles"
+pattern_list = []
+
+def load_patterns():
+    '''Loads patterns from local .txt files'''
+    global pattern_list
+    Pattern(auto_load=True, filename="glider.txt", pat_list=pattern_list, to_list=True)
+    Pattern(auto_load=True, filename="pentadecathlon.txt", pat_list=pattern_list, to_list=True)
+    Pattern(auto_load=True, filename="t_tetromino.txt", pat_list=pattern_list, to_list=True)
 
 def random_grid(size):
     '''Creates a grid with randomly chosen ON/OFF cells'''
     return np.random.choice(vals, size).reshape(size, size)
 
 def update(frame_num, img, grid, size):
+    '''Function to check the game's rules and apply them'''
     new_grid = grid.copy()
 
     #Doing rule checks
@@ -54,6 +66,10 @@ def update(frame_num, img, grid, size):
     grid[:] = new_grid[:]
     return img,
 
+def find_object(name, object_list):
+    '''Finds the pattern in the pattern_list'''
+    pass
+
 def add_object(grid, x, y, cell_arr, size_x, size_y):
     '''Adds an object with top left cell at (x,y)'''
 
@@ -64,6 +80,21 @@ def add_object(grid, x, y, cell_arr, size_x, size_y):
         cell_pat[cell[1]][cell[0]] = 255
 
     grid[y:y+size_y, x:x+size_x] = cell_pat
+
+def run_anim(grid, size, interval, filename):
+    fig, ax = plt.subplots()
+    img = ax.imshow(grid, interpolation='nearest', cmap='gray')    
+
+    #Animation part
+    anim = animation.FuncAnimation(fig, update, fargs=(img, grid, size, ),
+                                   frames=60, interval=interval, save_count=50)
+
+    if filename:
+        anim.save(filename, writer='imagemagick', fps=10, extra_args=['-vcodec', 'libx264'])
+
+    #plt.grid(which='both', color='gray')
+    #plt.minorticks_on()
+    plt.show()
 
 def main():
     '''The main program'''
@@ -94,17 +125,16 @@ def main():
     add_object(grid, 9, 0, pattern_list[0].cells, pattern_list[0].size_x, pattern_list[0].size_y)
     add_object(grid, 16, 16, pattern_list[1].cells, pattern_list[1].size_x, pattern_list[1].size_y)
 
-    fig, ax = plt.subplots()
-    img = ax.imshow(grid, interpolation='nearest', cmap='gray')
+    #Stops at proc.join() until the window is closed
+    #proc = Process(target=run_anim, args=(grid, size, anim_interval, args.movfile_name))
+    #proc.start()
+    #Some kind of input
+    #add_object(grid, 4, 4, pattern_list[2].cells, pattern_list[2].size_x, pattern_list[2].size_y)
+    #Output
+    #proc.join()
 
-    #Animation part
-    anim = animation.FuncAnimation(fig, update, fargs=(img, grid, size, ),
-                                   frames=60, interval=anim_interval, save_count=50)
-
-    if args.movfile_name:
-        anim.save(args.movfile_name, writer='imagemagick', fps=10, extra_args=['-vcodec', 'libx264'])
-
-    plt.show()
+    run_anim(grid, size, anim_interval, args.movfile_name)
 
 if __name__ == "__main__":
+    load_patterns()
     main()
