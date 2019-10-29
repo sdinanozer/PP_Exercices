@@ -20,11 +20,11 @@ vals = [ON, OFF]
 
 def load_patterns():
     '''Loads patterns from local .txt files'''
-    Pattern(filename="glider.txt", pat_list=Pattern.pattern_list)
-    Pattern(filename="pentadecathlon.txt", pat_list=Pattern.pattern_list)
-    Pattern(filename="t_tetromino.txt", pat_list=Pattern.pattern_list)
-    Pattern(filename="gosper.txt", pat_list=Pattern.pattern_list)
-    Pattern(filename="inf_10_cell.txt", pat_list=Pattern.pattern_list)
+    Pattern(filename="glider", pat_list=Pattern.pattern_list)
+    Pattern(filename="pentadecathlon", pat_list=Pattern.pattern_list)
+    Pattern(filename="t_tetromino", pat_list=Pattern.pattern_list)
+    Pattern(filename="gosper", pat_list=Pattern.pattern_list)
+    Pattern(filename="inf_10_cell", pat_list=Pattern.pattern_list)
 
     #Sorting because keeping everything orginized is nice
     Pattern.pattern_list.sort(key = lambda pattern: pattern.name)
@@ -74,7 +74,7 @@ def pat_menu():
 
     try:
         pat_num = int(input("Your choice: ")) - 1
-        if pat_num > len(Pattern.pattern_list):
+        if pat_num >= len(Pattern.pattern_list):
             print("Index you entered is out of range.")
             print("Please select a number from the menu...")
             return 
