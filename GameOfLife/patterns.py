@@ -105,7 +105,7 @@ class Pattern():
                     cell_arr.append(cur_cell)
 
         self.cells = cell_arr
-
+    
     def pat_to_img(self, filename):
         '''
         Saves a .png version of the pattern.
@@ -113,22 +113,13 @@ class Pattern():
         '''
         filename = ".".join((filename, "png"))
         filename = os.path.join(Pattern.pattern_path, filename)
-
-        img_x = self.size_x
-        img_y = self.size_y
-        img_size = (img_x, img_y)
         
-        pix_arr = [[(255, 255, 255) for d in range(img_x)] for i in range(img_y)]
-
+        img_size = (self.size_x, self.size_y)
+        
+        new_img = Image.new('RGB', img_size, (255, 255, 255))
+        
         for cell in self.cells:
-            pix_arr[cell[1]][cell[0]] = (0,0,0)
-
-        new_arr = []
-        #Yes x and y should switch places, I didn't mix them up
-        for x in range(img_y):
-            for y in range(img_x):
-                new_arr.append(pix_arr[x][y])
-
-        img = Image.new('RGB', img_size)
-        img.putdata(new_arr)
-        img.save(filename, 'PNG')
+            new_img[cell[1]][cell[0]] = (0, 0, 0)
+        
+        new_img.save(filename, 'PNG')
+        
