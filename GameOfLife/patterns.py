@@ -122,4 +122,3 @@ class Pattern():
             new_img[cell[1]][cell[0]] = (0, 0, 0)
         
         new_img.save(filename, 'PNG')
-        
