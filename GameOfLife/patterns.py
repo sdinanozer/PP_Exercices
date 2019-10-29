@@ -119,7 +119,6 @@ class Pattern():
         new_img = Image.new('RGB', img_size, (255, 255, 255))
         
         for cell in self.cells:
-            index = (cell[1], cell[0])
-            new_img.putpixel(index, (0, 0, 0))
+            new_img.putpixel(cell, (0, 0, 0))
         
         new_img.save(filename, 'PNG')
