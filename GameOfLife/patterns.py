@@ -12,6 +12,7 @@ class Pattern():
     
     def __init__(self, name="", pat_type="", size_x=0, size_y=0, cells=[],
                  pat_list=[], to_list=True, auto_load=True, filename=""):
+        '''Sets the values of Pattern object'''
         if not auto_load:
             self.name = name
             self.pat_type = pat_type
@@ -25,6 +26,7 @@ class Pattern():
             pat_list.append(self)
 
     def get_pattern(self, filename):
+        '''Loads the pattern data from .txt and .png files'''
         cell_arr = []
         filename_txt = ".".join((filename, "txt"))
         filename_txt = os.path.join(Pattern.pattern_path, filename_txt)
@@ -52,6 +54,7 @@ class Pattern():
             print("Please enter the correct filename or make sure the file exists...")
 
     def export_pattern(self, filename):
+        '''Exports the pattern to .txt or .png files'''
         filename_txt = ".".join((filename, "txt"))
         filename_txt = os.path.join(Pattern.pattern_path, filename_txt)
 
@@ -81,6 +84,10 @@ class Pattern():
                 print("Please make sure the pattern is loaded correctly...")
 
     def pat_from_img(self, filename):
+        '''
+        Gets cell coordinates from given .png file.
+        Every cell must be one pixel sized.
+        '''
         filename = ".".join((filename, "png"))
         filename = os.path.join(Pattern.pattern_path, filename)
 
@@ -100,6 +107,10 @@ class Pattern():
         self.cells = cell_arr
 
     def pat_to_img(self, filename):
+        '''
+        Saves a .png version of the pattern.
+        Every cell will be drawn as one pixel.
+        '''
         filename = ".".join((filename, "png"))
         filename = os.path.join(Pattern.pattern_path, filename)
 
@@ -107,17 +118,17 @@ class Pattern():
         img_y = self.size_y
         img_size = (img_x, img_y)
         
-        pix_arr = [[(255, 255, 255) for d in range(img_y)] for i in range(img_x)]
+        pix_arr = [[(255, 255, 255) for d in range(img_x)] for i in range(img_y)]
 
         for cell in self.cells:
-            pix_arr[cell[0]][cell[1]] = (0,0,0)
+            pix_arr[cell[1]][cell[0]] = (0,0,0)
 
         new_arr = []
-        for x in range(img_x):
-            for y in range(img_y):
+        #Yes x and y should switch places, I didn't mix them up
+        for x in range(img_y):
+            for y in range(img_x):
                 new_arr.append(pix_arr[x][y])
 
         img = Image.new('RGB', img_size)
-        print(new_arr)
         img.putdata(new_arr)
         img.save(filename, 'PNG')

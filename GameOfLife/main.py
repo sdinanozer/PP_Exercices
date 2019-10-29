@@ -19,15 +19,24 @@ OFF = 0
 vals = [ON, OFF]
 
 def load_patterns():
-    '''Loads patterns from local .txt files'''
+    '''Loads patterns from local .txt and .png files'''
     Pattern(filename="glider", pat_list=Pattern.pattern_list)
     Pattern(filename="pentadecathlon", pat_list=Pattern.pattern_list)
-    Pattern(filename="t_tetromino", pat_list=Pattern.pattern_list)
+    Pattern(filename="t_tetro", pat_list=Pattern.pattern_list)
     Pattern(filename="gosper", pat_list=Pattern.pattern_list)
     Pattern(filename="inf_10_cell", pat_list=Pattern.pattern_list)
+    Pattern(filename="copperhead", pat_list=Pattern.pattern_list)
+    Pattern(filename="light_w", pat_list=Pattern.pattern_list)
+    Pattern(filename="r_pento", pat_list=Pattern.pattern_list)
+    Pattern(filename="schick_engine", pat_list=Pattern.pattern_list)
+    Pattern(filename="schick_tagalong", pat_list=Pattern.pattern_list)
 
     #Sorting because keeping everything orginized is nice
-    Pattern.pattern_list.sort(key = lambda pattern: pattern.name)
+    try:
+        Pattern.pattern_list.sort(key = lambda pattern: pattern.name)
+    except AttributeError as error:
+        print(error)
+        print("Please make sure all patterns are loaded correctly...")
 
 def random_grid(size):
     '''Creates a grid with randomly chosen ON/OFF cells'''
@@ -68,6 +77,8 @@ def update(frame_num, img, grid, size):
     return img,
 
 def pat_menu():
+    '''Prints a menu of patterns for user to choose from'''
+
     print("\nList of patterns:")
     for d, pat in enumerate(Pattern.pattern_list, start=1):
         print(f"{d}- {pat.name}")
@@ -104,6 +115,9 @@ def add_object(grid, x, y, cell_arr, size_x, size_y):
         print("Please make sure pattern is added within the borders")
 
 def run_anim(grid, size, interval, filename):
+    '''The function that starts the matplotlib animation'''
+    #TODO: Increase performance by using blitting
+
     fig, ax = plt.subplots()
     img = ax.imshow(grid, interpolation='nearest', cmap='gray')    
 
@@ -178,6 +192,7 @@ def main():
 
     run_anim(grid, size, anim_interval, args.movfile_name)
 
+    #Multithreading in future? Requires update() function to change
     #Stops at proc.join() until the window is closed
     #proc = Process(target=run_anim, args=(grid, size, anim_interval, args.movfile_name))
     #proc.start()
