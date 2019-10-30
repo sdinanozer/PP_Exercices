@@ -1,19 +1,17 @@
-'''
-Pattern class for easier use of Conway's Game of Life
-'''
+'''Python library to import Pattern class'''
 
 import os
-import numpy as np
 from PIL import Image
 
 class Pattern():
+    '''Pattern class for easier use of Conway's Game of Life'''
     pattern_path = "./PatternFiles"
     pattern_list = []
-    
+
     def __init__(self, name="", pat_type="", size_x=0, size_y=0, cells=[],
-                 pat_list=[], to_list=True, auto_load=True, filename=""):
+                 pat_list=[], to_list=True, filename=""):
         '''Sets the values of Pattern object'''
-        if not auto_load:
+        if not filename:
             self.name = name
             self.pat_type = pat_type
             self.size_x = size_x
@@ -59,7 +57,7 @@ class Pattern():
         filename_txt = os.path.join(Pattern.pattern_path, filename_txt)
 
         print("1- Save as .txt only (cell coordinates are written inside)")
-        print("2- Save as .txt and .png")
+        print("2- Save as .txt and .png (cell coordinates are drawn)")
         answer = int(input("Your choice: "))
 
         with open(filename_txt, "w") as pattern_file:
@@ -76,7 +74,10 @@ class Pattern():
                 elif answer == 2:
                     self.pat_to_img(filename)
                 else:
-                    "Invalid answer, exporting cell coordinates failed."
+                    print("Invalid answer, exporting to .txt file as default")
+                    for d in range(len(self.cells)):
+                        pat_str = ','.join([str(num) for num in self.cells[d]])
+                        pattern_file.write(f"{pat_str}\n")
 
             except AttributeError as error:
                 print("Failed to export pattern.")
@@ -97,7 +98,7 @@ class Pattern():
 
         for x in range(img.size[0]):
             for y in range(img.size[1]):
-                pix_val = pix_arr[x,y]
+                pix_val = pix_arr[x, y]
                 total = pix_val[0] + pix_val[1] + pix_val[2]
 
                 if total < 100:
@@ -105,7 +106,7 @@ class Pattern():
                     cell_arr.append(cur_cell)
 
         self.cells = cell_arr
-    
+
     def pat_to_img(self, filename):
         '''
         Saves a .png version of the pattern.
@@ -113,12 +114,12 @@ class Pattern():
         '''
         filename = ".".join((filename, "png"))
         filename = os.path.join(Pattern.pattern_path, filename)
-        
+
         img_size = (self.size_x, self.size_y)
-        
+
         new_img = Image.new('RGB', img_size, (255, 255, 255))
-        
+
         for cell in self.cells:
             new_img.putpixel(cell, (0, 0, 0))
-        
+
         new_img.save(filename, 'PNG')
