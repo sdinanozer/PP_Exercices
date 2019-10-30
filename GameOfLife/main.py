@@ -6,17 +6,14 @@ Original author: Mahesh Venkitachalam
 Slight modifications by me
 '''
 
-import sys
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from multiprocessing import Process, Pool
 from patterns import Pattern
 
 ON = 255
 OFF = 0
-vals = [ON, OFF]
 
 def load_patterns():
     '''Loads patterns from local .txt and .png files'''
@@ -33,17 +30,23 @@ def load_patterns():
 
     #Sorting because keeping everything orginized is nice
     try:
-        Pattern.pattern_list.sort(key = lambda pattern: pattern.name)
+        Pattern.pattern_list.sort(key=lambda pattern: pattern.name)
     except AttributeError as error:
         print(error)
         print("Please make sure all patterns are loaded correctly...")
 
 def random_grid(size):
     '''Creates a grid with randomly chosen ON/OFF cells'''
-    return np.random.choice(vals, size).reshape(size, size)
+    vals = [ON, OFF]
+    grid = np.random.choice(vals, size*size, p=[0.2, 0.8]).reshape(size, size)
+    return grid
 
 def update(frame_num, img, grid, size):
-    '''Function to check the game's rules and apply them'''
+    '''
+    Function to check the game's rules and apply them.
+    Although 'frame_num' is unused, update() functio is
+    given 4 parameters during animation. So don't remove it.
+    '''
     new_grid = grid.copy()
 
     #Doing rule checks
@@ -74,6 +77,8 @@ def update(frame_num, img, grid, size):
     #Updating the data
     img.set_data(new_grid)
     grid[:] = new_grid[:]
+
+    #Trailing comma tuple, to make returned value iterable
     return img,
 
 def pat_menu():
@@ -82,13 +87,17 @@ def pat_menu():
     print("\nList of patterns:")
     for d, pat in enumerate(Pattern.pattern_list, start=1):
         print(f"{d}- {pat.name}")
+    print("Enter 0 (zero) if you don't want to add any patterns.")
 
     try:
         pat_num = int(input("Your choice: ")) - 1
         if pat_num >= len(Pattern.pattern_list):
             print("Index you entered is out of range.")
             print("Please select a number from the menu...")
-            return 
+            return False, 0, 0
+        elif pat_num == -1:
+            print("No patterns added.")
+            return False, 0, 0
 
         pat_c = Pattern.pattern_list[pat_num]
         print("Top-left corner being x = 0, y = 0 ;")
@@ -98,7 +107,7 @@ def pat_menu():
     except ValueError as error:
         print(error)
         print("Please enter an integer...")
-        return
+        return False, 0, 0
 
 def add_object(grid, x, y, cell_arr, size_x, size_y):
     '''Adds an object with top left cell at (x,y)'''
@@ -114,21 +123,26 @@ def add_object(grid, x, y, cell_arr, size_x, size_y):
         print(error)
         print("Please make sure pattern is added within the borders")
 
+def init_anim(grid):
+    '''Initializes the animation for using blitting'''
+    plt.imshow(grid, interpolation='nearest', cmap='gray')
+
 def run_anim(grid, size, interval, filename):
     '''The function that starts the matplotlib animation'''
-    #TODO: Increase performance by using blitting
 
     fig, ax = plt.subplots()
-    img = ax.imshow(grid, interpolation='nearest', cmap='gray')    
+    img = ax.imshow(grid, interpolation='nearest', cmap='gray')
 
     #Animation part
     anim = animation.FuncAnimation(fig, update, fargs=(img, grid, size, ),
-                                   frames=60, interval=interval, save_count=50)
+                                   init_func=init_anim(grid), blit=True,
+                                   frames=10, interval=interval, save_count=50)
 
     if filename:
         anim.save(filename, writer='imagemagick', fps=10,
                   extra_args=['-vcodec', 'libx264'])
 
+    #Uncomment those lines to add pixel grid
     #plt.grid(which='both', color='gray')
     #plt.minorticks_on()
     plt.show()
@@ -147,9 +161,9 @@ def main():
     size = 100
     if args.grid_size and int(args.grid_size) > 8:
         size = int(args.grid_size)
-    
+
     #Animation interval
-    anim_interval = 50
+    anim_interval = 200
     if args.interval:
         anim_interval = int(args.interval)
 
@@ -169,37 +183,30 @@ def main():
             print(error)
             print("Returning to the menu...")
             continue
-        
-        add_object(grid_tmp, x_choice, y_choice, pat_choice.cells,
-                   pat_choice.size_x, pat_choice.size_y)
+
+        if pat_choice in Pattern.pattern_list:
+            add_object(grid_tmp, x_choice, y_choice, pat_choice.cells,
+                       pat_choice.size_x, pat_choice.size_y)
+            print(f"Added {pat_choice.name} at ({x_choice},{y_choice})")
 
         answer = input("Do you want to add another? [y/n]: ")
-        if answer == "n" or answer == "N":
+        if answer in ("n", "N"):
             print("This is the starting frame.")
             print("(Close the window to continue)")
             plt.imshow(grid_tmp, interpolation='nearest', cmap='gray')
             plt.show()
 
             sub_answer = input("Do you want to start the game? [y/n]: ")
-            if sub_answer == "y" or sub_answer == "Y":
+            if sub_answer in ("y", "Y"):
                 grid[:] = grid_tmp[:]
                 break
-            elif sub_answer == "n" or sub_answer == "N":
+            elif sub_answer in ("n", "N"):
                 print("Returning to the menu...")
                 grid_tmp = grid.copy()
             else:
-                "Please enter a valid answer..."
+                print("Please enter a valid answer...")
 
     run_anim(grid, size, anim_interval, args.movfile_name)
-
-    #Multithreading in future? Requires update() function to change
-    #Stops at proc.join() until the window is closed
-    #proc = Process(target=run_anim, args=(grid, size, anim_interval, args.movfile_name))
-    #proc.start()
-    #Some kind of input
-    #add_object(grid, 4, 4, pattern_list[2].cells, pattern_list[2].size_x, pattern_list[2].size_y)
-    #Output
-    #proc.join()
 
 if __name__ == "__main__":
     load_patterns()
