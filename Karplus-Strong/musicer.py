@@ -1,7 +1,7 @@
 '''
 File for class 'Musicer'.
-Creates 3 octaves of notes from .txt files
-using Kasper-Strong algorithm and can play
+Creates 3 octaves (for now) of notes from .txt 
+files using Kasper-Strong algorithm and can play
 music from .txt file.
 '''
 
@@ -58,15 +58,23 @@ class Musicer:
             print(f"Loaded {octave[0]} ({octave[1]}th octave).")
 
     def load_music(self, filename):
+        #TODO: Add multiprocessing to display timer & stop a playing song
         filename = os.path.join(Musicer.music_path, filename)
 
         with open(filename, 'r') as file:
+            name = file.readline().rstrip()
+            artist = file.readline().rstrip()
+            print(f"Now playing {name} by {artist}...")
+
             bpm = int(file.readline().rstrip())
             rest = bpm / 60
 
             for line in file:
-                #Value of a whole note bring 4
-                cur_note, value = line.split(",")
+                #Value of a whole note being 4
+               	try:
+                	cur_note, value = line.split(",")
+                except:
+                	pass
 
                 self.note_dict[cur_note].play()
                 time.sleep(float(value) / rest)

@@ -67,11 +67,18 @@ def main():
                 exit()
 
     if args.music:
+        #TODO: Add a menu, I don't want to type the filename everytime
         mp_test = musicer.Musicer(channels=1, buffer=2048)
+        mp_test.load_notes("notes5.txt")
         mp_test.load_notes("notes4.txt")
         mp_test.load_notes("notes3.txt")
         mp_test.load_notes("notes2.txt")
-        mp_test.load_music("house_of_mem.txt")
+
+        while True:
+            filename = input("Enter name of song file: ")
+            if filename is "0":
+                break
+            mp_test.load_music(filename)
 
 if __name__ == "__main__":
     main()
