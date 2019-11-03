@@ -16,6 +16,7 @@ class Musicer:
     music_path = "./Musics"
     note_dict = {}
     octave_dict = {}
+    song_dict = {}
 
     def __init__(self, sampling_freq=44100, size=-16,
                  channels=2, buffer=512):
@@ -37,6 +38,7 @@ class Musicer:
 
         with open(filename, 'r') as file:
             octave = file.readline().rstrip().split(",")
+            self.octave_dict[int(octave[1])] = octave[0]
 
             for line in file:
                 name, freq = line.rstrip().split(",")
@@ -57,7 +59,16 @@ class Musicer:
 
             print(f"Loaded {octave[0]} ({octave[1]}th octave).")
 
-    def load_music(self, filename):
+    def load_musics(self, path):
+        directory = os.fsencode(path)
+        for d, music_file in enumerate(os.listdir(directory), start=1):
+            filename = os.fsdecode(music_file)
+            filepath = os.path.join(path, filename)
+            if filename.endswith(".txt"):
+                with open(filepath, "r") as file:
+                    self.song_dict[d] = (file.readline().rstrip(), filename)
+
+    def play_music(self, filename):
         #TODO: Add multiprocessing to display timer & stop a playing song
         filename = os.path.join(Musicer.music_path, filename)
 
@@ -73,8 +84,41 @@ class Musicer:
                 #Value of a whole note being 4
                	try:
                 	cur_note, value = line.split(",")
+                	self.note_dict[cur_note].play()
+                	time.sleep(float(value) / rest)
                 except:
                 	pass
 
-                self.note_dict[cur_note].play()
-                time.sleep(float(value) / rest)
+#Don't know why it doesn't work
+'''
+def piano(oct1, oct2, notes):
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_q:
+                    notes["C"+str(oct1)].play()
+                if event.key == pygame.K_w:
+                    notes["D"+str(oct1)].play()
+                if event.key == pygame.K_e:
+                    notes["E"+str(oct1)].play()
+                if event.key == pygame.K_r:
+                    notes["F"+str(oct1)].play()
+                if event.key == pygame.K_t:
+                    notes["G"+str(oct1)].play()
+                if event.key == pygame.K_y:
+                    notes["A"+str(oct1)].play()
+                if event.key == pygame.K_u:
+                    notes["B"+str(oct1)].play()
+                if event.key == pygame.K_2:
+                    notes["C#"+str(oct1)].play()
+                if event.key == pygame.K_3:
+                    notes["D#"+str(oct1)].play()
+                if event.key == pygame.K_5:
+                    notes["F#"+str(oct1)].play()
+                if event.key == pygame.K_6:
+                    notes["G#"+str(oct1)].play()
+                if event.key == pygame.K_7:
+                    notes["A#"+str(oct1)].play()
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+'''
