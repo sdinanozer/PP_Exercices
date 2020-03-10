@@ -1,7 +1,0 @@
-Symphony No. 5 (in C minor)
-[REDACTED]
-120
-D4,0.25
-D4,0.25
-D5,0.5
-A4,1
